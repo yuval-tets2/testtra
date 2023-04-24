@@ -11,24 +11,26 @@ https://docs.amplication.com/how-to/custom-code
   */
 import { InputType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
-import { StringNullableFilter } from "../../util/StringNullableFilter";
+import { DateTimeNullableFilter } from "../../util/DateTimeNullableFilter";
 import { Type } from "class-transformer";
-import { IsOptional, ValidateNested } from "class-validator";
+import { IsOptional, IsEnum, ValidateNested } from "class-validator";
 import { StringFilter } from "../../util/StringFilter";
-import { ShipmentListRelationFilter } from "../../shipment/base/ShipmentListRelationFilter";
+import { EnumShipmentStatus } from "./EnumShipmentStatus";
+import { StringNullableFilter } from "../../util/StringNullableFilter";
+import { UserWhereUniqueInput } from "../../user/base/UserWhereUniqueInput";
 
 @InputType()
-class UserWhereInput {
+class ShipmentWhereInput {
   @ApiProperty({
     required: false,
-    type: StringNullableFilter,
+    type: DateTimeNullableFilter,
   })
-  @Type(() => StringNullableFilter)
+  @Type(() => DateTimeNullableFilter)
   @IsOptional()
-  @Field(() => StringNullableFilter, {
+  @Field(() => DateTimeNullableFilter, {
     nullable: true,
   })
-  firstName?: StringNullableFilter;
+  date?: DateTimeNullableFilter;
 
   @ApiProperty({
     required: false,
@@ -43,6 +45,17 @@ class UserWhereInput {
 
   @ApiProperty({
     required: false,
+    enum: EnumShipmentStatus,
+  })
+  @IsEnum(EnumShipmentStatus)
+  @IsOptional()
+  @Field(() => EnumShipmentStatus, {
+    nullable: true,
+  })
+  status?: "Ready" | "Delivered" | "Returned";
+
+  @ApiProperty({
+    required: false,
     type: StringNullableFilter,
   })
   @Type(() => StringNullableFilter)
@@ -50,30 +63,19 @@ class UserWhereInput {
   @Field(() => StringNullableFilter, {
     nullable: true,
   })
-  lastName?: StringNullableFilter;
+  trackingNumber?: StringNullableFilter;
 
   @ApiProperty({
     required: false,
-    type: () => ShipmentListRelationFilter,
+    type: () => UserWhereUniqueInput,
   })
   @ValidateNested()
-  @Type(() => ShipmentListRelationFilter)
+  @Type(() => UserWhereUniqueInput)
   @IsOptional()
-  @Field(() => ShipmentListRelationFilter, {
+  @Field(() => UserWhereUniqueInput, {
     nullable: true,
   })
-  shipments?: ShipmentListRelationFilter;
-
-  @ApiProperty({
-    required: false,
-    type: StringFilter,
-  })
-  @Type(() => StringFilter)
-  @IsOptional()
-  @Field(() => StringFilter, {
-    nullable: true,
-  })
-  username?: StringFilter;
+  user?: UserWhereUniqueInput;
 }
 
-export { UserWhereInput as UserWhereInput };
+export { ShipmentWhereInput as ShipmentWhereInput };
