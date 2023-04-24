@@ -27,6 +27,9 @@ import { UserWhereUniqueInput } from "./UserWhereUniqueInput";
 import { UserFindManyArgs } from "./UserFindManyArgs";
 import { UserUpdateInput } from "./UserUpdateInput";
 import { User } from "./User";
+import { ShipmentFindManyArgs } from "../../shipment/base/ShipmentFindManyArgs";
+import { Shipment } from "../../shipment/base/Shipment";
+import { ShipmentWhereUniqueInput } from "../../shipment/base/ShipmentWhereUniqueInput";
 
 @swagger.ApiBearerAuth()
 @common.UseGuards(defaultAuthGuard.DefaultAuthGuard, nestAccessControl.ACGuard)
@@ -199,5 +202,109 @@ export class UserControllerBase {
       }
       throw error;
     }
+  }
+
+  @common.UseInterceptors(AclFilterResponseInterceptor)
+  @common.Get("/:id/shipments")
+  @ApiNestedQuery(ShipmentFindManyArgs)
+  @nestAccessControl.UseRoles({
+    resource: "Shipment",
+    action: "read",
+    possession: "any",
+  })
+  async findManyShipments(
+    @common.Req() request: Request,
+    @common.Param() params: UserWhereUniqueInput
+  ): Promise<Shipment[]> {
+    const query = plainToClass(ShipmentFindManyArgs, request.query);
+    const results = await this.service.findShipments(params.id, {
+      ...query,
+      select: {
+        createdAt: true,
+        date: true,
+        id: true,
+        status: true,
+        trackingNumber: true,
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+    if (results === null) {
+      throw new errors.NotFoundException(
+        `No resource was found for ${JSON.stringify(params)}`
+      );
+    }
+    return results;
+  }
+
+  @common.Post("/:id/shipments")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async connectShipments(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: ShipmentWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      shipments: {
+        connect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Patch("/:id/shipments")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async updateShipments(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: ShipmentWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      shipments: {
+        set: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
+  }
+
+  @common.Delete("/:id/shipments")
+  @nestAccessControl.UseRoles({
+    resource: "User",
+    action: "update",
+    possession: "any",
+  })
+  async disconnectShipments(
+    @common.Param() params: UserWhereUniqueInput,
+    @common.Body() body: ShipmentWhereUniqueInput[]
+  ): Promise<void> {
+    const data = {
+      shipments: {
+        disconnect: body,
+      },
+    };
+    await this.service.update({
+      where: params,
+      data,
+      select: { id: true },
+    });
   }
 }

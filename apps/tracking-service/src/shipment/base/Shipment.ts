@@ -13,18 +13,17 @@ import { ObjectType, Field } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import {
   IsDate,
-  IsString,
   IsOptional,
-  IsJSON,
+  IsString,
+  IsEnum,
   ValidateNested,
 } from "class-validator";
 import { Type } from "class-transformer";
-import { GraphQLJSON } from "graphql-type-json";
-import { JsonValue } from "type-fest";
-import { Shipment } from "../../shipment/base/Shipment";
+import { EnumShipmentStatus } from "./EnumShipmentStatus";
+import { User } from "../../user/base/User";
 
 @ObjectType()
-class User {
+class Shipment {
   @ApiProperty({
     required: true,
   })
@@ -35,14 +34,14 @@ class User {
 
   @ApiProperty({
     required: false,
-    type: String,
   })
-  @IsString()
+  @IsDate()
+  @Type(() => Date)
   @IsOptional()
-  @Field(() => String, {
+  @Field(() => Date, {
     nullable: true,
   })
-  firstName!: string | null;
+  date!: Date | null;
 
   @ApiProperty({
     required: true,
@@ -54,6 +53,17 @@ class User {
 
   @ApiProperty({
     required: false,
+    enum: EnumShipmentStatus,
+  })
+  @IsEnum(EnumShipmentStatus)
+  @IsOptional()
+  @Field(() => EnumShipmentStatus, {
+    nullable: true,
+  })
+  status?: "Ready" | "Delivered" | "Returned" | null;
+
+  @ApiProperty({
+    required: false,
     type: String,
   })
   @IsString()
@@ -61,23 +71,7 @@ class User {
   @Field(() => String, {
     nullable: true,
   })
-  lastName!: string | null;
-
-  @ApiProperty({
-    required: true,
-  })
-  @IsJSON()
-  @Field(() => GraphQLJSON)
-  roles!: JsonValue;
-
-  @ApiProperty({
-    required: false,
-    type: () => [Shipment],
-  })
-  @ValidateNested()
-  @Type(() => Shipment)
-  @IsOptional()
-  shipments?: Array<Shipment>;
+  trackingNumber!: string | null;
 
   @ApiProperty({
     required: true,
@@ -88,12 +82,13 @@ class User {
   updatedAt!: Date;
 
   @ApiProperty({
-    required: true,
-    type: String,
+    required: false,
+    type: () => User,
   })
-  @IsString()
-  @Field(() => String)
-  username!: string;
+  @ValidateNested()
+  @Type(() => User)
+  @IsOptional()
+  user?: User | null;
 }
 
-export { User as User };
+export { Shipment as Shipment };
